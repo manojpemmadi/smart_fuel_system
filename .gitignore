@@ -1,6 +1,26 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
-.env
-model/
+*.pyd
+
+# Virtual environment
 venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and outputs
+*.log
+*.csv
+*.txt
+*.zip
+
+# YOLO model files (trained weights)
+*.pt
