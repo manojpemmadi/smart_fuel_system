@@ -18,9 +18,5 @@ Thumbs.db
 
 # Logs and outputs
 *.log
-*.csv
-*.txt
 *.zip
 
-# YOLO model files (trained weights)
-*.pt
