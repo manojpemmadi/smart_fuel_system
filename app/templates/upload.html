@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Fuel System - Upload Vehicle Image</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .container { width: 400px; margin: auto; }
+        input[type=file] { margin: 20px 0; }
+        img { max-width: 100%; margin-top: 20px; }
+        .plate { font-size: 20px; margin-top: 20px; color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Vehicle Image</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="error">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <br>
+            <input type="submit" value="Upload & Detect Plate">
+        </form>
+        {% if plate_text %}
+            <div class="plate">Detected Plate: {{ plate_text }}</div>
+            {% if filename %}
+                <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
