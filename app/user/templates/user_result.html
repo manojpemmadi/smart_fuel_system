@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Detection Results{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2>Detection Results</h2>
+    <p>AI has processed your image and extracted the following number plate information.</p>
+
+    {% if plates %}
+    <div class="results-grid">
+        <div class="result-card">
+            <h3>📸 Uploaded Image</h3>
+            <img src="{{ url_for('user.uploaded_file', filename=image_name) }}" alt="Uploaded Image" class="image-preview">
+        </div>
+
+        <div class="result-card">
+            <h3>🔍 Detected Plates</h3>
+            {% for plate in plates %}
+            <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <div class="plate-text">{{ plate.text }}</div>
+
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 500;">Detection Confidence</span>
+                        <span style="font-weight: 600;">{{ "%.1f"|format(plate.det_conf * 100) }}%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ plate.det_conf * 100 }}%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 500;">OCR Confidence</span>
+                        <span style="font-weight: 600;">{{ "%.1f"|format(plate.ocr_conf * 100) }}%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: {{ plate.ocr_conf * 100 }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div style="text-align: center; padding: 1rem; background: rgba(79, 172, 254, 0.1); border-radius: 8px; border: 1px solid rgba(79, 172, 254, 0.2);">
+                <p style="margin: 0; font-weight: 600; color: #4facfe;">⚡ Processing Time: {{ inference_ms }}ms</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <p style="opacity: 0.7; font-size: 1.1rem;">❌ No number plates detected in the image.</p>
+        <p style="opacity: 0.5; margin-top: 0.5rem;">Try uploading a clearer image of a vehicle.</p>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{{ url_for('user.index') }}" class="btn btn-primary">📤 Upload Another Image</a>
+    </div>
+</div>
+{% endblock %}

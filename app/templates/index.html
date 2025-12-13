@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>License Plate OCR</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>License Plate OCR</h1>
+
+    <form id="uploadForm">
+      <label class="upload-box">
+        <input type="file" id="imageInput" name="image" accept="image/*" />
+        <span>Click to select or drop image (max 10 MB)</span>
+      </label>
+
+      <div>
+        <button type="submit" id="submitBtn">Upload & Detect</button>
+      </div>
+    </form>
+
+    <div id="status"></div>
+
+    <div id="results" class="results" style="display:none;">
+      <h2>Results</h2>
+      <div id="visual"></div>
+      <pre id="jsonOut"></pre>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Blacklist Management{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2>Blacklist Management</h2>
+    <a href="{{ url_for('admin.dashboard') }}" class="nav-link" style="margin-bottom: 2rem; display: inline-block;">Back to Dashboard</a>
+
+    <form method="post" style="margin-bottom: 2rem;">
+        <div class="form-group">
+            <label for="plate">Add Plate to Blacklist</label>
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" id="plate" name="plate" placeholder="Enter plate number (e.g., ABC123)" required style="flex: 1;">
+                <button type="submit" class="btn btn-success">Add to Blacklist</button>
+            </div>
+        </div>
+    </form>
+
+    <h3>Blacklisted Plates</h3>
+    {% if items %}
+    <div style="overflow-x: auto;">
+        <table class="professional-table">
+            <thead>
+                <tr>
+                    <th>Plate Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">{{ item.plate_text }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('admin.delete_blacklist', id=item.id) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; opacity: 0.7; padding: 2rem;">No blacklisted plates yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

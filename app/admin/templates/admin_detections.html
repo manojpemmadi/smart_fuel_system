@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Detection History{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2>Detection History</h2>
+    <a href="{{ url_for('admin.dashboard') }}" class="nav-link" style="margin-bottom: 2rem; display: inline-block;">Back to Dashboard</a>
+
+    {% if data %}
+    <div style="overflow-x: auto;">
+        <table class="professional-table">
+            <thead>
+                <tr>
+                    <th>Plate Text</th>
+                    <th>Det. Conf.</th>
+                    <th>OCR Conf.</th>
+                    <th>Timestamp</th>
+                    <th>Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detection in data %}
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary);">{{ detection.text }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>{{ "%.1f"|format(detection.det_conf * 100) }}%</span>
+                            <div class="confidence-bar" style="width: 60px; height: 8px;">
+                                <div class="confidence-fill" style="width: {{ detection.det_conf * 100 }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>{{ "%.1f"|format(detection.ocr_conf * 100) }}%</span>
+                            <div class="confidence-bar" style="width: 60px; height: 8px;">
+                                <div class="confidence-fill" style="width: {{ detection.ocr_conf * 100 }}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size: 0.9rem; opacity: 0.8;">{{ detection.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('user.uploaded_file', filename=detection.image_name) }}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <p style="opacity: 0.7; font-size: 1.1rem;">No detections recorded yet.</p>
+        <p style="opacity: 0.5; margin-top: 0.5rem;">Upload some images to see detection results here.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

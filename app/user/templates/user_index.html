@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}AI Number Plate OCR{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h1>🚗 AI-Powered Number Plate Detection & OCR</h1>
+    <p>Upload an image of a vehicle to detect and extract the number plate text using advanced AI technology.</p>
+
+    <form action="{{ url_for('user.index') }}" method="post" enctype="multipart/form-data">
+        <div class="upload-area" id="uploadArea">
+            <div id="uploadText">
+                <p>📁 Drag & drop an image here or click to browse</p>
+                <p>Supported formats: JPG, PNG, JPEG, WEBP (Max 10MB)</p>
+            </div>
+            <input type="file" name="image" id="fileInput" class="file-input" accept="image/*" required>
+        </div>
+        <button type="submit" class="upload-btn">🔍 Detect Number Plate</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadText = document.getElementById('uploadText');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            uploadText.innerHTML = `<p>✅ File selected: ${files[0].name}</p>`;
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            uploadText.innerHTML = `<p>✅ File selected: ${e.target.files[0].name}</p>`;
+        }
+    });
+});
+</script>
+{% endblock %}

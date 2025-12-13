@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <h2>Admin Dashboard</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <p style="margin: 0; opacity: 0.9;">Welcome, Admin!</p>
+        <a href="{{ url_for('admin.logout') }}" class="btn btn-danger" style="text-decoration: none;">Logout</a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>{{ detections }}</h3>
+            <p>Total Detections</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ blacklist }}</h3>
+            <p>Blacklisted Plates</p>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('admin.detections') }}" class="btn btn-primary" style="text-decoration: none;">View Detections</a>
+        <a href="{{ url_for('admin.blacklist') }}" class="btn btn-secondary" style="text-decoration: none;">Manage Blacklist</a>
+    </div>
+</div>
+{% endblock %}
