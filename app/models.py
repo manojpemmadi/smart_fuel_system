@@ -5,19 +5,62 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+
 class User(UserMixin, db.Model):
+    """
+    Application user model.
+
+    Fields (for project requirements):
+    - id
+    - username
+    - email
+    - password_hash
+    - role
+
+    We also keep a legacy `password` and `is_admin` column to stay compatible
+    with the existing code/database, but new code should use `password_hash`
+    and `role`.
+    """
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+    # New, explicit password hash field for security
+    password_hash = db.Column(db.String(200), nullable=False)
+
+    # Role: "user" (default) or "admin"
+    role = db.Column(db.String(20), default="user", nullable=False)
+
+    # Legacy fields kept for backward compatibility
+    password = db.Column(db.String(200))  # previously used for password hash
     is_admin = db.Column(db.Boolean, default=False)
 
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
+    def set_password(self, password: str) -> None:
+        """Hash and store the password safely."""
+        hashed = generate_password_hash(password)
+        self.password_hash = hashed
 
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
+        # Keep legacy column in sync so existing code/db continues to work
+        self.password = hashed
+
+    def check_password(self, password: str) -> bool:
+        """
+        Verify a plain-text password against the stored hash.
+        Falls back to the legacy `password` column if needed.
+        """
+        if self.password_hash:
+            return check_password_hash(self.password_hash, password)
+        if self.password:
+            return check_password_hash(self.password, password)
+        return False
+
+    @property
+    def is_admin_user(self) -> bool:
+        """Semantic helper for checking admin role."""
+        return self.role == "admin" or bool(self.is_admin)
 
     def __repr__(self):
         return f"<User {self.username}>"

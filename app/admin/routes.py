@@ -7,11 +7,20 @@ admin_bp = Blueprint("admin", __name__, template_folder="templates")
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        user = User.query.filter_by(username=request.form["username"], is_admin=True).first()
-        if user and user.check_password(request.form["password"]):
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+
+        # Admins can log in with username or email
+        user = User.query.filter(
+            ((User.username == username) | (User.email == username))
+            & ((User.role == "admin") | (User.is_admin.is_(True)))
+        ).first()
+
+        if user and user.check_password(password):
             login_user(user)
             return redirect(url_for("admin.dashboard"))
-        flash("Invalid credentials")
+
+        flash("Invalid admin credentials", "danger")
     return render_template("admin_login.html")
 
 @admin_bp.route("/dashboard")

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Smart Fuel System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card glass-card fade-in">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Register to use the Smart Fuel System</p>
+
+        <form method="post" class="auth-form">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="form-input"
+                    placeholder="Choose a username"
+                    value="{{ username or '' }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="form-input"
+                    placeholder="Enter your email"
+                    value="{{ email or '' }}"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-input"
+                    placeholder="Create a password"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="confirm_password">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    class="form-input"
+                    placeholder="Re-enter your password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Register
+            </button>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        <div class="alert-list">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="auth-footer">
+            <p>Already have an account?
+                <a href="{{ url_for('auth.login') }}">Login</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 2rem;
+}
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 2.5rem 2.75rem;
+}
+.auth-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.auth-subtitle {
+    margin-bottom: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+.auth-form {
+    margin-bottom: 1.5rem;
+}
+.alert-list {
+    margin-top: 1rem;
+}
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+.alert-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-red);
+}
+.alert-success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+.alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary);
+}
+.auth-footer {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+.auth-footer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+
