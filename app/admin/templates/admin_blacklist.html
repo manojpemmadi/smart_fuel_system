@@ -3,46 +3,308 @@
 {% block title %}Blacklist Management{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <h2>Blacklist Management</h2>
-    <a href="{{ url_for('admin.dashboard') }}" class="nav-link" style="margin-bottom: 2rem; display: inline-block;">Back to Dashboard</a>
+<div class="admin-blacklist fade-in">
+    <div class="page-header glass-card">
+        <div class="header-top">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <span>←</span>
+                Back to Dashboard
+            </a>
+        </div>
+        <h1 class="page-title">
+            <span>🚫</span>
+            Blacklist Management
+        </h1>
+        <p class="page-subtitle">Manage restricted and blacklisted vehicle number plates</p>
+    </div>
 
-    <form method="post" style="margin-bottom: 2rem;">
-        <div class="form-group">
-            <label for="plate">Add Plate to Blacklist</label>
-            <div style="display: flex; gap: 1rem;">
-                <input type="text" id="plate" name="plate" placeholder="Enter plate number (e.g., ABC123)" required style="flex: 1;">
-                <button type="submit" class="btn btn-success">Add to Blacklist</button>
+    <div class="blacklist-form-card glass-card" style="margin-top: 2rem;">
+        <h2 class="section-title">
+            <span>➕</span>
+            Add New Plate to Blacklist
+        </h2>
+        <form method="post" class="blacklist-form">
+            <div class="form-group">
+                <label for="plate" class="form-label">
+                    <span>🔢</span>
+                    Number Plate
+                </label>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="plate" 
+                        name="plate" 
+                        placeholder="Enter plate number (e.g., MH12AB1234)" 
+                        required 
+                        class="form-input"
+                        style="text-transform: uppercase;"
+                        pattern="[A-Z0-9\s-]+"
+                    >
+                    <button type="submit" class="btn btn-success">
+                        <span>➕</span>
+                        Add to Blacklist
+                    </button>
+                </div>
+                <small class="form-hint">Enter the vehicle number plate to restrict from fuel dispensing</small>
+            </div>
+        </form>
+    </div>
+
+    <div class="blacklist-table-card glass-card" style="margin-top: 2rem;">
+        <div class="table-header">
+            <h2 class="section-title">
+                <span>📋</span>
+                Blacklisted Plates
+            </h2>
+            <div class="table-count">
+                <span class="count-badge">{{ items|length }}</span>
+                <span class="count-label">Total Restricted</span>
             </div>
         </div>
-    </form>
 
-    <h3>Blacklisted Plates</h3>
-    {% if items %}
-    <div style="overflow-x: auto;">
-        <table class="professional-table">
-            <thead>
-                <tr>
-                    <th>Plate Number</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in items %}
-                <tr>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">{{ item.plate_text }}</td>
-                    <td>
-                        <form method="post" action="{{ url_for('admin.delete_blacklist', id=item.id) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% if items %}
+        <div class="table-container">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Plate Number</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr class="table-row">
+                        <td class="row-number">{{ loop.index }}</td>
+                        <td class="plate-cell">
+                            <div class="plate-display">
+                                <span class="plate-icon">🚗</span>
+                                <span class="plate-text">{{ item.plate_text }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-blacklisted">
+                                <span>🚫</span>
+                                Restricted
+                            </span>
+                        </td>
+                        <td>
+                            <form method="post" action="{{ url_for('admin.delete_blacklist', id=item.id) }}" class="delete-form">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this plate from blacklist?')">
+                                    <span>🗑️</span>
+                                    Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No Blacklisted Plates</h3>
+            <p>Your blacklist is currently empty. Add vehicle number plates above to restrict them from fuel dispensing.</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <p style="text-align: center; opacity: 0.7; padding: 2rem;">No blacklisted plates yet.</p>
-    {% endif %}
 </div>
+
+<style>
+.admin-blacklist {
+    animation: fadeIn 0.6s ease;
+}
+
+.page-header {
+    padding: 2rem;
+}
+
+.header-top {
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.blacklist-form-card {
+    padding: 2rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.blacklist-form {
+    margin-top: 1rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.input-group .form-input {
+    flex: 1;
+}
+
+.form-hint {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+}
+
+.blacklist-table-card {
+    padding: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-count {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+}
+
+.count-badge {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary);
+}
+
+.count-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+}
+
+.table-row {
+    transition: all var(--transition-fast);
+}
+
+.table-row:hover {
+    background: var(--bg-glass-hover);
+    transform: scale(1.01);
+}
+
+.row-number {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-tertiary);
+    font-weight: 600;
+}
+
+.plate-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.plate-icon {
+    font-size: 1.25rem;
+}
+
+.plate-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+}
+
+.status-blacklisted {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    color: var(--accent-red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.delete-form {
+    display: inline;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .input-group .btn {
+        width: 100%;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
 {% endblock %}

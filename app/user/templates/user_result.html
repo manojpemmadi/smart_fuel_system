@@ -1,61 +1,193 @@
 {% extends "base.html" %}
 
-{% block title %}Detection Results{% endblock %}
+{% block title %}Detection Results - AI Number Plate OCR{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <h2>Detection Results</h2>
-    <p>AI has processed your image and extracted the following number plate information.</p>
+<!-- Results Section -->
+<section class="results-section">
+    <div class="results-header-section fade-in">
+        <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 1rem;">🎯 AI Detection Results</h1>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); margin: 0;">Your image has been processed using advanced computer vision algorithms</p>
+    </div>
 
     {% if plates %}
-    <div class="results-grid">
-        <div class="result-card">
-            <h3>📸 Uploaded Image</h3>
-            <img src="{{ url_for('user.uploaded_file', filename=image_name) }}" alt="Uploaded Image" class="image-preview">
+    <div class="results-container slide-up">
+        <!-- Image Display -->
+        <div class="results-card">
+            <div class="results-header">
+                <h2 class="results-title">
+                    <span>📸</span>
+                    Original Image
+                </h2>
+            </div>
+            <div class="image-container">
+                <img src="{{ url_for('user.uploaded_file', filename=image_name) }}" alt="Uploaded Image" class="result-image">
+            </div>
         </div>
 
-        <div class="result-card">
-            <h3>🔍 Detected Plates</h3>
-            {% for plate in plates %}
-            <div style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
-                <div class="plate-text">{{ plate.text }}</div>
-
-                <div style="margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span style="font-weight: 500;">Detection Confidence</span>
-                        <span style="font-weight: 600;">{{ "%.1f"|format(plate.det_conf * 100) }}%</span>
-                    </div>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: {{ plate.det_conf * 100 }}%"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span style="font-weight: 500;">OCR Confidence</span>
-                        <span style="font-weight: 600;">{{ "%.1f"|format(plate.ocr_conf * 100) }}%</span>
-                    </div>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: {{ plate.ocr_conf * 100 }}%"></div>
-                    </div>
+        <!-- Results Table -->
+        <div class="results-card">
+            <div class="results-header">
+                <h2 class="results-title">
+                    <span>📊</span>
+                    Detection & OCR Results
+                </h2>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">
+                    ⚡ Processing Time: {{ inference_ms }}ms
                 </div>
             </div>
-            {% endfor %}
-
-            <div style="text-align: center; padding: 1rem; background: rgba(79, 172, 254, 0.1); border-radius: 8px; border: 1px solid rgba(79, 172, 254, 0.2);">
-                <p style="margin: 0; font-weight: 600; color: #4facfe;">⚡ Processing Time: {{ inference_ms }}ms</p>
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>🔢 Number Plate</th>
+                            <th>🎯 Detection Confidence</th>
+                            <th>📝 OCR Confidence</th>
+                            <th>📍 Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plate in plates %}
+                        <tr class="result-row">
+                            <td class="plate-cell">
+                                <div class="plate-text-display">{{ plate.text }}</div>
+                            </td>
+                            <td class="confidence-cell">
+                                <div class="confidence-wrapper">
+                                    <div class="confidence-label">Detection</div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill {% if plate.det_conf >= 0.8 %}excellent{% elif plate.det_conf >= 0.6 %}good{% else %}fair{% endif %}" style="width: {{ (plate.det_conf * 100)|round }}%"></div>
+                                    </div>
+                                    <div class="confidence-value">{{ "%.1f"|format(plate.det_conf * 100) }}%</div>
+                                </div>
+                            </td>
+                            <td class="confidence-cell">
+                                <div class="confidence-wrapper">
+                                    <div class="confidence-label">OCR</div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill {% if plate.ocr_conf >= 0.8 %}excellent{% elif plate.ocr_conf >= 0.6 %}good{% else %}fair{% endif %}" style="width: {{ (plate.ocr_conf * 100)|round }}%"></div>
+                                    </div>
+                                    <div class="confidence-value">{{ "%.1f"|format(plate.ocr_conf * 100) }}%</div>
+                                </div>
+                            </td>
+                            <td class="status-cell">
+                                {% if plate.det_conf >= 0.8 and plate.ocr_conf >= 0.8 %}
+                                    <span class="status-badge status-excellent">
+                                        <span>🌟</span>
+                                        Excellent
+                                    </span>
+                                {% elif plate.det_conf >= 0.6 and plate.ocr_conf >= 0.6 %}
+                                    <span class="status-badge status-good">
+                                        <span>✅</span>
+                                        Good
+                                    </span>
+                                {% else %}
+                                    <span class="status-badge status-fair">
+                                        <span>⚠️</span>
+                                        Fair
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
+    <!-- Action Section -->
+    <section class="action-section">
+        <div class="action-buttons">
+            <a href="{{ url_for('user.index') }}" class="btn btn-primary">
+                <span>📤</span>
+                Upload Another Image
+            </a>
+            <button onclick="copyResults()" class="btn btn-secondary">
+                <span>📋</span>
+                Copy Results
+            </button>
+            <button onclick="window.print()" class="btn btn-outline">
+                <span>🖨️</span>
+                Print Report
+            </button>
+        </div>
+
+        <div class="summary-section">
+            <div class="summary-item">
+                <div class="summary-icon">🔍</div>
+                <div class="summary-content">
+                    <h4>Plates Detected</h4>
+                    <p>{{ plates|length }}</p>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-icon">⚡</div>
+                <div class="summary-content">
+                    <h4>Processing Time</h4>
+                    <p>{{ inference_ms }}ms</p>
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-icon">📊</div>
+                <div class="summary-content">
+                    <h4>Average Confidence</h4>
+                    <p>{{ "%.1f"|format((plates|sum(attribute='det_conf') / plates|length * 100)) }}%</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     {% else %}
-    <div style="text-align: center; padding: 3rem;">
-        <p style="opacity: 0.7; font-size: 1.1rem;">❌ No number plates detected in the image.</p>
-        <p style="opacity: 0.5; margin-top: 0.5rem;">Try uploading a clearer image of a vehicle.</p>
+    <div class="no-results">
+        <div class="no-results-icon">❌</div>
+        <h3>No Number Plates Detected</h3>
+        <p>Our AI couldn't find any number plates in your image. Try uploading a clearer image of a vehicle with a visible license plate.</p>
+        <a href="{{ url_for('user.index') }}" class="btn btn-primary">
+            <span>🔄</span>
+            Try Again
+        </a>
     </div>
     {% endif %}
+</section>
+{% endblock %}
 
-    <div style="text-align: center; margin-top: 2rem;">
-        <a href="{{ url_for('user.index') }}" class="btn btn-primary">📤 Upload Another Image</a>
-    </div>
-</div>
+{% block scripts %}
+<script>
+function copyResults() {
+    const results = document.querySelectorAll('.plate-text-display');
+    let text = 'AI Number Plate Detection Results:\n\n';
+    results.forEach((result, index) => {
+        text += `Plate ${index + 1}: ${result.textContent}\n`;
+    });
+    text += `\nProcessed in {{ inference_ms }}ms`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        // Show temporary success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span>✅</span> Copied!';
+        btn.style.background = 'var(--accent-green)';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 2000);
+    });
+}
+
+// Add print styles
+const printStyles = `
+<style>
+@media print {
+    .navbar, .action-section, .footer { display: none !important; }
+    .container { padding: 0 !important; }
+    .results-section { margin-top: 0 !important; }
+    .results-header-section { text-align: center; margin-bottom: 40px; }
+    body { background: white !important; color: black !important; }
+    .results-card { box-shadow: none !important; border: 1px solid #ccc !important; }
+}
+</style>
+`;
+document.head.insertAdjacentHTML('beforeend', printStyles);
+</script>
 {% endblock %}

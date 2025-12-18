@@ -3,56 +3,406 @@
 {% block title %}Detection History{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <h2>Detection History</h2>
-    <a href="{{ url_for('admin.dashboard') }}" class="nav-link" style="margin-bottom: 2rem; display: inline-block;">Back to Dashboard</a>
+<div class="admin-detections fade-in">
+    <div class="page-header glass-card">
+        <div class="header-top">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+                <span>←</span>
+                Back to Dashboard
+            </a>
+        </div>
+        <h1 class="page-title">
+            <span>📊</span>
+            Detection History
+        </h1>
+        <p class="page-subtitle">Complete log of all vehicle number plate detections and OCR results</p>
+    </div>
 
     {% if data %}
-    <div style="overflow-x: auto;">
-        <table class="professional-table">
-            <thead>
-                <tr>
-                    <th>Plate Text</th>
-                    <th>Det. Conf.</th>
-                    <th>OCR Conf.</th>
-                    <th>Timestamp</th>
-                    <th>Image</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detection in data %}
-                <tr>
-                    <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-primary);">{{ detection.text }}</td>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>{{ "%.1f"|format(detection.det_conf * 100) }}%</span>
-                            <div class="confidence-bar" style="width: 60px; height: 8px;">
-                                <div class="confidence-fill" style="width: {{ detection.det_conf * 100 }}%"></div>
+    <div class="detections-stats glass-card" style="margin-top: 2rem;">
+        <div class="stat-item">
+            <div class="stat-icon-small">📈</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ data|length }}</div>
+                <div class="stat-label-small">Total Detections</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon-small">⚡</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ "%.1f"|format((data|sum(attribute='det_conf') / data|length * 100)) }}%</div>
+                <div class="stat-label-small">Avg Detection Conf</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon-small">📝</div>
+            <div class="stat-info">
+                <div class="stat-value">{{ "%.1f"|format((data|sum(attribute='ocr_conf') / data|length * 100)) }}%</div>
+                <div class="stat-label-small">Avg OCR Confidence</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="detections-table-card glass-card" style="margin-top: 2rem;">
+        <div class="table-header">
+            <h2 class="section-title">
+                <span>📋</span>
+                All Detections
+            </h2>
+            <div class="table-actions">
+                <input type="text" placeholder="Search plates..." class="search-input" id="searchInput">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="professional-table" id="detectionsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Plate Text</th>
+                        <th>Detection Confidence</th>
+                        <th>OCR Confidence</th>
+                        <th>Timestamp</th>
+                        <th>Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detection in data %}
+                    <tr class="table-row">
+                        <td class="row-number">{{ loop.index }}</td>
+                        <td class="plate-cell">
+                            <div class="plate-display">
+                                <span class="plate-icon">🚗</span>
+                                <span class="plate-text">{{ detection.text }}</span>
                             </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>{{ "%.1f"|format(detection.ocr_conf * 100) }}%</span>
-                            <div class="confidence-bar" style="width: 60px; height: 8px;">
-                                <div class="confidence-fill" style="width: {{ detection.ocr_conf * 100 }}%"></div>
+                        </td>
+                        <td>
+                            <div class="confidence-display">
+                                <div class="confidence-bar-small">
+                                    <div class="confidence-fill {% if detection.det_conf >= 0.8 %}excellent{% elif detection.det_conf >= 0.6 %}good{% else %}fair{% endif %}" 
+                                         style="width: {{ detection.det_conf * 100 }}%"></div>
+                                </div>
+                                <span class="confidence-value-small">{{ "%.1f"|format(detection.det_conf * 100) }}%</span>
                             </div>
-                        </div>
-                    </td>
-                    <td style="font-size: 0.9rem; opacity: 0.8;">{{ detection.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>
-                        <a href="{{ url_for('user.uploaded_file', filename=detection.image_name) }}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td>
+                            <div class="confidence-display">
+                                <div class="confidence-bar-small">
+                                    <div class="confidence-fill {% if detection.ocr_conf >= 0.8 %}excellent{% elif detection.ocr_conf >= 0.6 %}good{% else %}fair{% endif %}" 
+                                         style="width: {{ detection.ocr_conf * 100 }}%"></div>
+                                </div>
+                                <span class="confidence-value-small">{{ "%.1f"|format(detection.ocr_conf * 100) }}%</span>
+                            </div>
+                        </td>
+                        <td class="timestamp-cell">
+                            <div class="timestamp-display">
+                                <span class="timestamp-date">{{ detection.timestamp.strftime('%Y-%m-%d') }}</span>
+                                <span class="timestamp-time">{{ detection.timestamp.strftime('%H:%M:%S') }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('user.uploaded_file', filename=detection.image_name) }}" 
+                               target="_blank" 
+                               class="btn btn-primary btn-sm">
+                                <span>👁️</span>
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% else %}
-    <div style="text-align: center; padding: 3rem;">
-        <p style="opacity: 0.7; font-size: 1.1rem;">No detections recorded yet.</p>
-        <p style="opacity: 0.5; margin-top: 0.5rem;">Upload some images to see detection results here.</p>
+    <div class="empty-state glass-card" style="margin-top: 2rem; padding: 4rem 2rem; text-align: center;">
+        <div class="empty-icon">📭</div>
+        <h3>No Detections Recorded</h3>
+        <p>No vehicle detections have been recorded yet. Upload some images through the user interface to see detection results here.</p>
+        <a href="{{ url_for('user.index') }}" class="btn btn-primary" style="margin-top: 1.5rem;">
+            <span>📤</span>
+            Go to Upload Page
+        </a>
     </div>
     {% endif %}
 </div>
+
+<style>
+.admin-detections {
+    animation: fadeIn 0.6s ease;
+}
+
+.page-header {
+    padding: 2rem;
+}
+
+.header-top {
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.detections-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-normal);
+}
+
+.stat-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.stat-icon-small {
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-glass);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label-small {
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detections-table-card {
+    padding: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.search-input {
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    min-width: 250px;
+    transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--bg-glass-hover);
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.table-container {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+}
+
+.table-row {
+    transition: all var(--transition-fast);
+}
+
+.table-row:hover {
+    background: var(--bg-glass-hover);
+    transform: scale(1.01);
+}
+
+.row-number {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-tertiary);
+    font-weight: 600;
+}
+
+.plate-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.plate-icon {
+    font-size: 1.25rem;
+}
+
+.plate-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+}
+
+.confidence-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 120px;
+}
+
+.confidence-bar-small {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.confidence-value-small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 45px;
+    text-align: right;
+}
+
+.timestamp-cell {
+    font-size: 0.9rem;
+}
+
+.timestamp-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timestamp-date {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.timestamp-time {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.empty-state {
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .detections-stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Simple search functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const table = document.getElementById('detectionsTable');
+    
+    if (searchInput && table) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const plateText = row.querySelector('.plate-text')?.textContent.toLowerCase() || '';
+                if (plateText.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

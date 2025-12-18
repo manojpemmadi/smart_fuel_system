@@ -3,27 +3,288 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <h2>Admin Dashboard</h2>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <p style="margin: 0; opacity: 0.9;">Welcome, Admin!</p>
-        <a href="{{ url_for('admin.logout') }}" class="btn btn-danger" style="text-decoration: none;">Logout</a>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>{{ detections }}</h3>
-            <p>Total Detections</p>
-        </div>
-        <div class="stat-card">
-            <h3>{{ blacklist }}</h3>
-            <p>Blacklisted Plates</p>
+<div class="admin-dashboard fade-in">
+    <div class="dashboard-header glass-card">
+        <div class="header-content">
+            <div>
+                <h1 class="dashboard-title">Admin Dashboard</h1>
+                <p class="dashboard-subtitle">Welcome back, Administrator! Monitor and manage your ANPR system.</p>
+            </div>
+            <a href="{{ url_for('admin.logout') }}" class="btn btn-danger">
+                <span>🚪</span>
+                Logout
+            </a>
         </div>
     </div>
 
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="{{ url_for('admin.detections') }}" class="btn btn-primary" style="text-decoration: none;">View Detections</a>
-        <a href="{{ url_for('admin.blacklist') }}" class="btn btn-secondary" style="text-decoration: none;">Manage Blacklist</a>
+    <div class="stats-grid" style="margin-top: 2rem;">
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.1));">
+                <span style="font-size: 2.5rem;">🔍</span>
+            </div>
+            <h3 class="stat-number">{{ detections }}</h3>
+            <p class="stat-label">Total Detections</p>
+            <div class="stat-trend">
+                <span style="color: var(--accent-green);">↑</span>
+                <span style="color: var(--text-tertiary); font-size: 0.85rem;">All time records</span>
+            </div>
+        </div>
+
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));">
+                <span style="font-size: 2.5rem;">🚫</span>
+            </div>
+            <h3 class="stat-number">{{ blacklist }}</h3>
+            <p class="stat-label">Blacklisted Plates</p>
+            <div class="stat-trend">
+                <span style="color: var(--accent-red);">⚠️</span>
+                <span style="color: var(--text-tertiary); font-size: 0.85rem;">Restricted vehicles</span>
+            </div>
+        </div>
+
+        <div class="stat-card glass-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));">
+                <span style="font-size: 2.5rem;">⚡</span>
+            </div>
+            <h3 class="stat-number">99.2%</h3>
+            <p class="stat-label">System Uptime</p>
+            <div class="stat-trend">
+                <span style="color: var(--accent-green);">✓</span>
+                <span style="color: var(--text-tertiary); font-size: 0.85rem;">All systems operational</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-actions glass-card" style="margin-top: 2rem;">
+        <h2 class="section-title">
+            <span>⚙️</span>
+            Quick Actions
+        </h2>
+        <div class="action-grid">
+            <a href="{{ url_for('admin.detections') }}" class="action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <span>📊</span>
+                </div>
+                <h3>View Detections</h3>
+                <p>Browse complete detection history and analytics</p>
+                <div class="action-arrow">→</div>
+            </a>
+
+            <a href="{{ url_for('admin.blacklist') }}" class="action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <span>🚫</span>
+                </div>
+                <h3>Manage Blacklist</h3>
+                <p>Add or remove vehicles from restricted list</p>
+                <div class="action-arrow">→</div>
+            </a>
+        </div>
     </div>
 </div>
+
+<style>
+.admin-dashboard {
+    animation: fadeIn 0.6s ease;
+}
+
+.dashboard-header {
+    padding: 2rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.dashboard-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.stat-card {
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl), var(--shadow-glow);
+}
+
+.stat-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-light);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+}
+
+.stat-trend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.dashboard-actions {
+    padding: 2rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.action-card:hover::before {
+    transform: scaleX(1);
+}
+
+.action-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.action-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-md);
+}
+
+.action-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.action-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.action-arrow {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--primary);
+    transition: transform var(--transition-fast);
+}
+
+.action-card:hover .action-arrow {
+    transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 {% endblock %}

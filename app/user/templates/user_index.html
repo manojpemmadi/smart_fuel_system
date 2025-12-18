@@ -1,23 +1,105 @@
 {% extends "base.html" %}
 
-{% block title %}AI Number Plate OCR{% endblock %}
+{% block title %}AI Number Plate OCR - Home{% endblock %}
 
 {% block content %}
-<div class="glass-card">
-    <h1>🚗 AI-Powered Number Plate Detection & OCR</h1>
-    <p>Upload an image of a vehicle to detect and extract the number plate text using advanced AI technology.</p>
-
-    <form action="{{ url_for('user.index') }}" method="post" enctype="multipart/form-data">
-        <div class="upload-area" id="uploadArea">
-            <div id="uploadText">
-                <p>📁 Drag & drop an image here or click to browse</p>
-                <p>Supported formats: JPG, PNG, JPEG, WEBP (Max 10MB)</p>
-            </div>
-            <input type="file" name="image" id="fileInput" class="file-input" accept="image/*" required>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">AI-Powered Number Plate Recognition System</h1>
+        <p class="hero-subtitle">Detect, extract, and verify vehicle number plates using YOLO & OCR in real time. Experience enterprise-grade AI technology for smart traffic management.</p>
+        <div class="hero-actions">
+            <a href="#upload" class="btn btn-primary">
+                <span>📤</span>
+                Upload Image
+            </a>
+            <a href="#features" class="btn btn-secondary">
+                <span>ℹ️</span>
+                Learn More
+            </a>
         </div>
-        <button type="submit" class="upload-btn">🔍 Detect Number Plate</button>
-    </form>
-</div>
+    </div>
+</section>
+
+<!-- Upload Section -->
+<section id="upload" class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>📸</span>
+            Upload Vehicle Image
+        </h2>
+    </div>
+    <div class="card-content">
+        <form action="{{ url_for('user.index') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                    <div class="upload-main">Drag & drop your vehicle image here</div>
+                    <div class="upload-sub">or click to browse your files</div>
+                </div>
+                <div class="upload-formats">Supported: JPG, PNG, JPEG, WEBP (Max 10MB)</div>
+                <input type="file" name="image" id="fileInput" class="file-input" accept="image/*" required>
+            </div>
+
+            <div class="upload-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span>🔍</span>
+                    Detect Number Plate
+                </button>
+                <div class="upload-features">
+                    <div class="feature-item">
+                        <span class="feature-icon">🎯</span>
+                        <span>YOLO Detection</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📝</span>
+                        <span>OCR Extraction</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <span>Real-time Processing</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" style="margin-top: 48px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <span>🚀</span>
+                Advanced AI Features
+            </h2>
+        </div>
+        <div class="card-content">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+                <div class="feature-card">
+                    <div class="feature-icon-large">🎯</div>
+                    <h3>YOLO Object Detection</h3>
+                    <p>State-of-the-art YOLOv11 model for precise number plate localization with high accuracy and speed.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-large">📝</div>
+                    <h3>EasyOCR Text Extraction</h3>
+                    <p>Advanced optical character recognition that handles various fonts, lighting conditions, and plate formats.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-large">📊</div>
+                    <h3>Confidence Scoring</h3>
+                    <p>Detailed confidence metrics for both detection and OCR results with visual progress indicators.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-large">🔒</div>
+                    <h3>Admin Dashboard</h3>
+                    <p>Comprehensive admin panel for managing detections, viewing history, and blacklist management.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
 {% block scripts %}
@@ -25,8 +107,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
-    const uploadText = document.getElementById('uploadText');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadText = document.querySelector('.upload-text');
 
+    // Upload area interactions
     uploadArea.addEventListener('click', () => fileInput.click());
 
     uploadArea.addEventListener('dragover', (e) => {
@@ -44,15 +128,108 @@ document.addEventListener('DOMContentLoaded', function() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             fileInput.files = files;
-            uploadText.innerHTML = `<p>✅ File selected: ${files[0].name}</p>`;
+            updateUploadText(files[0]);
         }
     });
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
-            uploadText.innerHTML = `<p>✅ File selected: ${e.target.files[0].name}</p>`;
+            updateUploadText(e.target.files[0]);
         }
+    });
+
+    function updateUploadText(file) {
+        uploadText.innerHTML = `
+            <div class="upload-main">✅ File selected: ${file.name}</div>
+            <div class="upload-sub">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+        `;
+        submitBtn.disabled = false;
+    }
+
+    // Form submission
+    const uploadForm = document.getElementById('uploadForm');
+    uploadForm.addEventListener('submit', function(e) {
+        submitBtn.innerHTML = '<span>⏳</span> Detecting...';
+        submitBtn.disabled = true;
+    });
+
+    // Smooth scrolling for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
     });
 });
 </script>
+<style>
+.upload-actions {
+    text-align: center;
+    margin-top: 32px;
+}
+
+.upload-features {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg-hover);
+    border-radius: 24px;
+    border: 1px solid var(--border-light);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.feature-icon {
+    font-size: 16px;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 32px 24px;
+    background: var(--bg-hover);
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    transition: var(--transition-normal);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon-large {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.feature-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
+}
+</style>
 {% endblock %}
