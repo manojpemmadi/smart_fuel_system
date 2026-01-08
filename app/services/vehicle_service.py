@@ -1,11 +1,11 @@
 # app/services/vehicle_service.py
 """
 Vehicle verification service for fuel station ANPR system.
-Handles blacklist checking, age estimation, and restriction logic.
+Handles blacklist checking, age calculation from database, and restriction logic.
 """
 import re
 from datetime import datetime
-from app.models import Blacklist, db
+from app.models import Blacklist, Vehicle, db
 
 def estimate_vehicle_age(plate_text):
     """
@@ -85,70 +85,124 @@ def estimate_vehicle_age(plate_text):
     return {'estimated_year': None, 'estimated_age': None, 'extraction_method': 'none'}
 
 
-def check_vehicle_status(plate_text, max_age_years=None):
+def get_vehicle_by_plate(plate_text):
     """
-    Check vehicle status against blacklist and age restrictions.
+    Query vehicle from database by registration number.
+    Handles both formats: "SN66 XMZ" and "SN66XMZ"
     
     Args:
         plate_text: Extracted number plate text
-        max_age_years: Maximum allowed vehicle age (from config)
+    
+    Returns:
+        Vehicle object or None if not found
+    """
+    if not plate_text:
+        return None
+    
+    plate_upper = plate_text.upper().strip()
+    plate_no_spaces = plate_upper.replace(' ', '').replace('-', '')
+    
+    # Try exact match (no spaces)
+    vehicle = Vehicle.query.filter_by(registration_number=plate_no_spaces).first()
+    if vehicle:
+        return vehicle
+    
+    # Try exact match (with spaces)
+    vehicle = Vehicle.query.filter_by(registration_number=plate_upper).first()
+    if vehicle:
+        return vehicle
+    
+    # Try case-insensitive search without spaces
+    from sqlalchemy import func
+    vehicle = Vehicle.query.filter(
+        func.replace(Vehicle.registration_number, ' ', '').ilike(f'%{plate_no_spaces}%')
+    ).first()
+    
+    return vehicle
+
+
+def check_vehicle_status(plate_text, max_age_years=10):
+    """
+    Check vehicle status against database, blacklist, and age restrictions.
+    
+    Args:
+        plate_text: Extracted number plate text
+        max_age_years: Maximum allowed vehicle age (default: 10 years)
     
     Returns:
         dict: {
-            'status': 'safe' | 'blacklisted' | 'age_restricted',
+            'status': 'safe' | 'blacklisted' | 'age_restricted' | 'not_found',
             'is_blacklisted': bool,
             'is_age_restricted': bool,
-            'age_info': dict from estimate_vehicle_age(),
+            'vehicle': Vehicle object or None,
+            'vehicle_age': int or None,
             'message': str
         }
     """
     if not plate_text:
         return {
-            'status': 'safe',
+            'status': 'not_found',
             'is_blacklisted': False,
             'is_age_restricted': False,
-            'age_info': {'estimated_year': None, 'estimated_age': None},
+            'vehicle': None,
+            'vehicle_age': None,
             'message': 'No plate text provided'
         }
     
     plate_upper = plate_text.upper().strip()
     
-    # Check blacklist
-    is_blacklisted = Blacklist.query.filter_by(plate_text=plate_upper).first() is not None
+    # Check blacklist table first
+    is_blacklisted_in_table = Blacklist.query.filter_by(plate_text=plate_upper).first() is not None
+    
+    # Query vehicle from database
+    vehicle = get_vehicle_by_plate(plate_upper)
+    
+    # Check if vehicle is blacklisted (either in blacklist table or vehicle record)
+    is_blacklisted = is_blacklisted_in_table
+    if vehicle and vehicle.is_blacklisted():
+        is_blacklisted = True
     
     if is_blacklisted:
         return {
             'status': 'blacklisted',
             'is_blacklisted': True,
             'is_age_restricted': False,
-            'age_info': {'estimated_year': None, 'estimated_age': None},
+            'vehicle': vehicle,
+            'vehicle_age': vehicle.calculate_age() if vehicle else None,
             'message': '⚠️ VEHICLE BLACKLISTED - Fuel dispensing denied!'
         }
     
-    # Check age restrictions
-    age_info = estimate_vehicle_age(plate_upper)
-    is_age_restricted = False
+    # If vehicle not found in database
+    if not vehicle:
+        return {
+            'status': 'not_found',
+            'is_blacklisted': False,
+            'is_age_restricted': False,
+            'vehicle': None,
+            'vehicle_age': None,
+            'message': '⚠️ Vehicle not found in database. Please verify registration number.'
+        }
     
-    if max_age_years and age_info['estimated_age'] is not None:
-        if age_info['estimated_age'] > max_age_years:
-            is_age_restricted = True
-            return {
-                'status': 'age_restricted',
-                'is_blacklisted': False,
-                'is_age_restricted': True,
-                'age_info': age_info,
-                'message': f'⚠️ VEHICLE AGE RESTRICTED - Vehicle age ({age_info["estimated_age"]} years) exceeds limit ({max_age_years} years). Fuel dispensing denied!'
-            }
+    # Check age restrictions using actual registration year from database
+    vehicle_age = vehicle.calculate_age()
+    is_age_restricted = vehicle.is_old_vehicle(max_age_years)
     
-    # Safe vehicle
-    age_msg = ""
-    if age_info['estimated_age'] is not None:
-        age_msg = f" (Estimated age: {age_info['estimated_age']} years)"
+    if is_age_restricted:
+        return {
+            'status': 'age_restricted',
+            'is_blacklisted': False,
+            'is_age_restricted': True,
+            'vehicle': vehicle,
+            'vehicle_age': vehicle_age,
+            'message': f'⚠️ Vehicle is old – Do not pour petrol (Age: {vehicle_age} years, Limit: {max_age_years} years)'
+        }
     
+    # Safe vehicle - within age limit and not blacklisted
     return {
         'status': 'safe',
         'is_blacklisted': False,
         'is_age_restricted': False,
-        'age_info': age_info,
-        'message': f'✅ Vehicle verified - Safe to refuel{age_msg}'
+        'vehicle': vehicle,
+        'vehicle_age': vehicle_age,
+        'message': f'✅ Vehicle verified - Safe to refuel (Age: {vehicle_age} years)'
     }

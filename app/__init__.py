@@ -38,6 +38,27 @@ def create_app():
             db.session.add(admin)
             db.session.commit()
 
+        # Create sample vehicle for demonstration (SN66 XMZ)
+        from app.models import Vehicle
+        sample_vehicle = Vehicle.query.filter_by(registration_number="SN66XMZ").first()
+        if not sample_vehicle:
+            sample_vehicle = Vehicle(
+                registration_number="SN66XMZ",
+                owner_name="Ramesh Kumar",
+                vehicle_type="Car",
+                brand="Maruti Suzuki",
+                model="Baleno",
+                registration_year=2017,
+                fuel_type="Petrol",
+                vehicle_color="White",
+                registration_state="Telangana",
+                insurance_status="Valid",
+                pollution_cert_status="Valid",
+                blacklist_status="No"
+            )
+            db.session.add(sample_vehicle)
+            db.session.commit()
+
     # Register blueprints
     from app.user.routes import user_bp
     from app.admin.routes import admin_bp

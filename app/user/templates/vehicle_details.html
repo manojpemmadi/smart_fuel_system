@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicle Details - {{ vehicle.registration_number }}{% endblock %}
+
+{% block content %}
+<section class="results-section">
+    <div class="results-header-section fade-in">
+        <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 1rem;">🚗 Vehicle Details</h1>
+        <p style="font-size: 1.1rem; color: var(--text-secondary); margin: 0;">Complete vehicle information retrieved from database</p>
+    </div>
+
+    <div class="results-container slide-up">
+        <!-- Vehicle Status Card -->
+        <div class="results-card">
+            <div class="results-header">
+                <h2 class="results-title">
+                    <span>📋</span>
+                    Registration Number: {{ vehicle.registration_number }}
+                </h2>
+            </div>
+            
+            {% if is_blacklisted %}
+            <div class="vehicle-warning-box danger" style="margin-bottom: 1.5rem;">
+                <div class="warning-icon">🚫</div>
+                <div class="warning-content">
+                    <strong>BLACKLISTED VEHICLE</strong>
+                    <p>This vehicle is blacklisted. Fuel dispensing is denied.</p>
+                </div>
+            </div>
+            {% elif is_old %}
+            <div class="vehicle-warning-box" style="margin-bottom: 1.5rem;">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                    <strong>Vehicle is old – Do not pour petrol</strong>
+                    <p>Vehicle age: <strong>{{ vehicle_age }} years</strong> | Maximum allowed: <strong>{{ max_age_years }} years</strong></p>
+                </div>
+            </div>
+            {% else %}
+            <div class="vehicle-status-message" style="margin-bottom: 1.5rem;">
+                <p class="status-message-text" style="color: #10b981;">✅ Vehicle verified - Safe to refuel (Age: {{ vehicle_age }} years)</p>
+            </div>
+            {% endif %}
+
+            <!-- Vehicle Details Grid -->
+            <div class="vehicle-details-grid">
+                <div class="detail-card">
+                    <div class="detail-icon">👤</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Owner Name</div>
+                        <div class="detail-value">{{ vehicle.owner_name }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🚙</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Vehicle Type</div>
+                        <div class="detail-value">{{ vehicle.vehicle_type }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🏭</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Brand</div>
+                        <div class="detail-value">{{ vehicle.brand }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🚗</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Model</div>
+                        <div class="detail-value">{{ vehicle.model }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Registration Year</div>
+                        <div class="detail-value">{{ vehicle.registration_year }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">⏳</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Vehicle Age</div>
+                        <div class="detail-value">{{ vehicle_age }} years</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">⛽</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Fuel Type</div>
+                        <div class="detail-value">{{ vehicle.fuel_type }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🎨</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Vehicle Color</div>
+                        <div class="detail-value">{{ vehicle.vehicle_color }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Registration State</div>
+                        <div class="detail-value">{{ vehicle.registration_state }}</div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🛡️</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Insurance Status</div>
+                        <div class="detail-value {% if vehicle.insurance_status == 'Valid' %}status-valid{% else %}status-invalid{% endif %}">
+                            {{ vehicle.insurance_status }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🌿</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Pollution Certificate</div>
+                        <div class="detail-value {% if vehicle.pollution_cert_status == 'Valid' %}status-valid{% else %}status-invalid{% endif %}">
+                            {{ vehicle.pollution_cert_status }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🚫</div>
+                    <div class="detail-content">
+                        <div class="detail-label">Blacklist Status</div>
+                        <div class="detail-value {% if vehicle.blacklist_status == 'Yes' %}status-invalid{% else %}status-valid{% endif %}">
+                            {{ vehicle.blacklist_status }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Section -->
+    <section class="action-section">
+        <div class="action-buttons">
+            <a href="{{ url_for('user.index') }}" class="btn btn-primary">
+                <span>🔙</span>
+                Back to Home
+            </a>
+            <button onclick="window.print()" class="btn btn-outline">
+                <span>🖨️</span>
+                Print Details
+            </button>
+        </div>
+    </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.vehicle-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.detail-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.detail-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-hover);
+    border-radius: 10px;
+}
+
+.detail-content {
+    flex: 1;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.detail-value {
+    font-size: 1.125rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.detail-value.status-valid {
+    color: #10b981;
+}
+
+.detail-value.status-invalid {
+    color: #ef4444;
+}
+
+.vehicle-warning-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+}
+
+.vehicle-warning-box.danger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.warning-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.warning-content {
+    flex: 1;
+}
+
+.warning-content strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.warning-content p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.vehicle-status-message {
+    margin-bottom: 1.5rem;
+}
+
+.status-message-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+@media print {
+    .navbar, .action-section, .footer { display: none !important; }
+    .container { padding: 0 !important; }
+    .results-section { margin-top: 0 !important; }
+    body { background: white !important; color: black !important; }
+    .results-card { box-shadow: none !important; border: 1px solid #ccc !important; }
+}
+</style>
+{% endblock %}
+
+

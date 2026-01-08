@@ -94,6 +94,80 @@
                 </table>
             </div>
         </div>
+
+        <!-- Vehicle Verification Section -->
+        {% if vehicle_statuses %}
+        <div class="results-card">
+            <div class="results-header">
+                <h2 class="results-title">
+                    <span>🚗</span>
+                    Vehicle Verification & Fuel Status
+                </h2>
+            </div>
+            <div class="vehicle-status-container">
+                {% for status in vehicle_statuses %}
+                <div class="vehicle-status-card {% if status.status == 'safe' %}status-safe{% elif status.status == 'age_restricted' %}status-warning{% elif status.status == 'blacklisted' %}status-danger{% else %}status-info{% endif %}">
+                    <div class="vehicle-status-header">
+                        <h3>
+                            {% if status.vehicle %}
+                                <span>🚗</span> {{ status.vehicle.registration_number }}
+                            {% else %}
+                                <span>🔍</span> {{ plates[loop.index0].text }}
+                            {% endif %}
+                        </h3>
+                        {% if status.vehicle %}
+                        <a href="{{ url_for('user.vehicle_details', registration_number=status.vehicle.registration_number) }}" class="btn btn-sm btn-outline">
+                            <span>📋</span>
+                            Vehicle Details
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="vehicle-status-message">
+                        <p class="status-message-text">{{ status.message }}</p>
+                    </div>
+
+                    {% if status.status == 'age_restricted' %}
+                    <div class="vehicle-warning-box">
+                        <div class="warning-icon">⚠️</div>
+                        <div class="warning-content">
+                            <strong>Vehicle is old – Do not pour petrol</strong>
+                            <p>Vehicle age: <strong>{{ status.vehicle_age }} years</strong> | Maximum allowed: <strong>{{ max_age_years }} years</strong></p>
+                        </div>
+                    </div>
+                    {% elif status.status == 'blacklisted' %}
+                    <div class="vehicle-warning-box danger">
+                        <div class="warning-icon">🚫</div>
+                        <div class="warning-content">
+                            <strong>BLACKLISTED VEHICLE</strong>
+                            <p>This vehicle is blacklisted. Fuel dispensing is denied.</p>
+                        </div>
+                    </div>
+                    {% elif status.status == 'safe' and status.vehicle %}
+                    <div class="vehicle-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Owner:</span>
+                            <span class="info-value">{{ status.vehicle.owner_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Vehicle:</span>
+                            <span class="info-value">{{ status.vehicle.brand }} {{ status.vehicle.model }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Age:</span>
+                            <span class="info-value">{{ status.vehicle_age }} years</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Fuel Type:</span>
+                            <span class="info-value">{{ status.vehicle.fuel_type }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Action Section -->
@@ -190,4 +264,136 @@ const printStyles = `
 `;
 document.head.insertAdjacentHTML('beforeend', printStyles);
 </script>
+<style>
+.vehicle-status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.vehicle-status-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 2px solid;
+    background: var(--bg-glass);
+    transition: all 0.3s ease;
+}
+
+.vehicle-status-card.status-safe {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.vehicle-status-card.status-warning {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.vehicle-status-card.status-danger {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.vehicle-status-card.status-info {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.vehicle-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.vehicle-status-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.vehicle-status-message {
+    margin-bottom: 1rem;
+}
+
+.status-message-text {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.vehicle-warning-box {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.vehicle-warning-box.danger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.warning-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.warning-content {
+    flex: 1;
+}
+
+.warning-content strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.warning-content p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.vehicle-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+</style>
 {% endblock %}

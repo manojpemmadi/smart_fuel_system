@@ -25,4 +25,4 @@ class Config:
         os.makedirs(UPLOAD_FOLDER)
     
     # Vehicle age restrictions (for pollution control)
-    MAX_VEHICLE_AGE_YEARS = int(os.environ.get("MAX_VEHICLE_AGE_YEARS", "15"))  # Default: 15 years
+    MAX_VEHICLE_AGE_YEARS = int(os.environ.get("MAX_VEHICLE_AGE_YEARS", "10"))  # Default: 10 years

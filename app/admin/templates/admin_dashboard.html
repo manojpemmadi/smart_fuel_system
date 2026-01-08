@@ -43,14 +43,14 @@
         </div>
 
         <div class="stat-card glass-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));">
-                <span style="font-size: 2.5rem;">⚡</span>
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.1));">
+                <span style="font-size: 2.5rem;">🚗</span>
             </div>
-            <h3 class="stat-number">99.2%</h3>
-            <p class="stat-label">System Uptime</p>
+            <h3 class="stat-number">{{ vehicles }}</h3>
+            <p class="stat-label">Total Vehicles</p>
             <div class="stat-trend">
-                <span style="color: var(--accent-green);">✓</span>
-                <span style="color: var(--text-tertiary); font-size: 0.85rem;">All systems operational</span>
+                <span style="color: var(--accent-green);">📊</span>
+                <span style="color: var(--text-tertiary); font-size: 0.85rem;">In database</span>
             </div>
         </div>
     </div>
@@ -76,6 +76,15 @@
                 </div>
                 <h3>Manage Blacklist</h3>
                 <p>Add or remove vehicles from restricted list</p>
+                <div class="action-arrow">→</div>
+            </a>
+
+            <a href="{{ url_for('admin.vehicles') }}" class="action-card">
+                <div class="action-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <span>🚗</span>
+                </div>
+                <h3>Manage Vehicles</h3>
+                <p>View, add, edit, or delete vehicle records ({{ vehicles }} total)</p>
                 <div class="action-arrow">→</div>
             </a>
         </div>

@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Vehicle - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-page fade-in">
+    <div class="page-header glass-card">
+        <div class="header-content">
+            <div>
+                <h1 class="page-title">✏️ Edit Vehicle</h1>
+                <p class="page-subtitle">Update vehicle details for: <strong>{{ vehicle.registration_number }}</strong></p>
+            </div>
+            <a href="{{ url_for('admin.vehicles') }}" class="btn btn-secondary">
+                <span>←</span>
+                Back to Vehicles
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            <span>{% if category == 'success' %}✅{% elif category == 'error' %}❌{% else %}ℹ️{% endif %}</span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="form-container glass-card">
+        <form method="POST" action="{{ url_for('admin.vehicle_edit', id=vehicle.id) }}" class="vehicle-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="registration_number" class="form-label">
+                        <span>🔢</span>
+                        Registration Number <span class="required">*</span>
+                    </label>
+                    <input type="text" id="registration_number" name="registration_number" 
+                           class="form-input" value="{{ vehicle.registration_number }}"
+                           placeholder="e.g., SN66XMZ or SN66 XMZ" required autofocus>
+                    <small class="form-hint">Enter the vehicle registration number (spaces will be removed)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="owner_name" class="form-label">
+                        <span>👤</span>
+                        Owner Name <span class="required">*</span>
+                    </label>
+                    <input type="text" id="owner_name" name="owner_name" 
+                           class="form-input" value="{{ vehicle.owner_name }}"
+                           placeholder="e.g., Ramesh Kumar" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="vehicle_type" class="form-label">
+                        <span>🚙</span>
+                        Vehicle Type <span class="required">*</span>
+                    </label>
+                    <select id="vehicle_type" name="vehicle_type" class="form-input" required>
+                        <option value="">Select Vehicle Type</option>
+                        <option value="Car" {% if vehicle.vehicle_type == 'Car' %}selected{% endif %}>Car</option>
+                        <option value="Bike" {% if vehicle.vehicle_type == 'Bike' %}selected{% endif %}>Bike</option>
+                        <option value="Truck" {% if vehicle.vehicle_type == 'Truck' %}selected{% endif %}>Truck</option>
+                        <option value="Bus" {% if vehicle.vehicle_type == 'Bus' %}selected{% endif %}>Bus</option>
+                        <option value="Auto" {% if vehicle.vehicle_type == 'Auto' %}selected{% endif %}>Auto</option>
+                        <option value="Other" {% if vehicle.vehicle_type == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="brand" class="form-label">
+                        <span>🏭</span>
+                        Brand <span class="required">*</span>
+                    </label>
+                    <input type="text" id="brand" name="brand" 
+                           class="form-input" value="{{ vehicle.brand }}"
+                           placeholder="e.g., Maruti Suzuki" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="model" class="form-label">
+                        <span>🚗</span>
+                        Model <span class="required">*</span>
+                    </label>
+                    <input type="text" id="model" name="model" 
+                           class="form-input" value="{{ vehicle.model }}"
+                           placeholder="e.g., Baleno" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registration_year" class="form-label">
+                        <span>📅</span>
+                        Registration Year <span class="required">*</span>
+                    </label>
+                    <input type="number" id="registration_year" name="registration_year" 
+                           class="form-input" value="{{ vehicle.registration_year }}"
+                           placeholder="e.g., 2017" min="1900" required>
+                    <small class="form-hint">Current age: {{ vehicle.calculate_age() }} years</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="fuel_type" class="form-label">
+                        <span>⛽</span>
+                        Fuel Type <span class="required">*</span>
+                    </label>
+                    <select id="fuel_type" name="fuel_type" class="form-input" required>
+                        <option value="">Select Fuel Type</option>
+                        <option value="Petrol" {% if vehicle.fuel_type == 'Petrol' %}selected{% endif %}>Petrol</option>
+                        <option value="Diesel" {% if vehicle.fuel_type == 'Diesel' %}selected{% endif %}>Diesel</option>
+                        <option value="CNG" {% if vehicle.fuel_type == 'CNG' %}selected{% endif %}>CNG</option>
+                        <option value="Electric" {% if vehicle.fuel_type == 'Electric' %}selected{% endif %}>Electric</option>
+                        <option value="Hybrid" {% if vehicle.fuel_type == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="vehicle_color" class="form-label">
+                        <span>🎨</span>
+                        Vehicle Color <span class="required">*</span>
+                    </label>
+                    <input type="text" id="vehicle_color" name="vehicle_color" 
+                           class="form-input" value="{{ vehicle.vehicle_color }}"
+                           placeholder="e.g., White" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="registration_state" class="form-label">
+                        <span>📍</span>
+                        Registration State <span class="required">*</span>
+                    </label>
+                    <input type="text" id="registration_state" name="registration_state" 
+                           class="form-input" value="{{ vehicle.registration_state }}"
+                           placeholder="e.g., Telangana" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="insurance_status" class="form-label">
+                        <span>🛡️</span>
+                        Insurance Status <span class="required">*</span>
+                    </label>
+                    <select id="insurance_status" name="insurance_status" class="form-input" required>
+                        <option value="Valid" {% if vehicle.insurance_status == 'Valid' %}selected{% endif %}>Valid</option>
+                        <option value="Expired" {% if vehicle.insurance_status == 'Expired' %}selected{% endif %}>Expired</option>
+                        <option value="Not Available" {% if vehicle.insurance_status == 'Not Available' %}selected{% endif %}>Not Available</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pollution_cert_status" class="form-label">
+                        <span>🌿</span>
+                        Pollution Certificate Status <span class="required">*</span>
+                    </label>
+                    <select id="pollution_cert_status" name="pollution_cert_status" class="form-input" required>
+                        <option value="Valid" {% if vehicle.pollution_cert_status == 'Valid' %}selected{% endif %}>Valid</option>
+                        <option value="Expired" {% if vehicle.pollution_cert_status == 'Expired' %}selected{% endif %}>Expired</option>
+                        <option value="Not Available" {% if vehicle.pollution_cert_status == 'Not Available' %}selected{% endif %}>Not Available</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="blacklist_status" class="form-label">
+                        <span>🚫</span>
+                        Blacklist Status
+                    </label>
+                    <select id="blacklist_status" name="blacklist_status" class="form-input">
+                        <option value="No" {% if vehicle.blacklist_status == 'No' %}selected{% endif %}>No</option>
+                        <option value="Yes" {% if vehicle.blacklist_status == 'Yes' %}selected{% endif %}>Yes</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span>
+                    Update Vehicle
+                </button>
+                <a href="{{ url_for('admin.vehicles') }}" class="btn btn-secondary">
+                    <span>❌</span>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.admin-page {
+    animation: fadeIn 0.6s ease;
+}
+
+.page-header {
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.flash-messages {
+    margin-bottom: 1.5rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.form-container {
+    padding: 2rem;
+}
+
+.vehicle-form {
+    max-width: 1200px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.required {
+    color: #ef4444;
+}
+
+.form-input {
+    padding: 0.875rem 1.25rem;
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: var(--bg-glass-hover);
+}
+
+.form-hint {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+

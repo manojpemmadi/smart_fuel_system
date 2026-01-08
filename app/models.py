@@ -90,3 +90,43 @@ class Detection(db.Model):
 
     def __repr__(self):
         return f"<Detection {self.text}>"
+
+
+class Vehicle(db.Model):
+    """
+    Vehicle database model for Smart Fuel System.
+    Stores complete vehicle information for fuel station ANPR system.
+    """
+    __tablename__ = "vehicles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    registration_number = db.Column(db.String(20), unique=True, nullable=False, index=True)
+    owner_name = db.Column(db.String(100), nullable=False)
+    vehicle_type = db.Column(db.String(50), nullable=False)  # Car, Bike, Truck, etc.
+    brand = db.Column(db.String(100), nullable=False)  # Maruti Suzuki, etc.
+    model = db.Column(db.String(100), nullable=False)  # Baleno, etc.
+    registration_year = db.Column(db.Integer, nullable=False)
+    fuel_type = db.Column(db.String(50), nullable=False)  # Petrol, Diesel, etc.
+    vehicle_color = db.Column(db.String(50), nullable=False)
+    registration_state = db.Column(db.String(100), nullable=False)
+    insurance_status = db.Column(db.String(20), nullable=False)  # Valid, Expired, etc.
+    pollution_cert_status = db.Column(db.String(20), nullable=False)  # Valid, Expired, etc.
+    blacklist_status = db.Column(db.String(10), nullable=False, default="No")  # Yes, No
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def calculate_age(self):
+        """Calculate vehicle age from registration year."""
+        current_year = datetime.now().year
+        return max(0, current_year - self.registration_year)
+
+    def is_old_vehicle(self, max_age_years=10):
+        """Check if vehicle exceeds maximum age threshold."""
+        return self.calculate_age() > max_age_years
+
+    def is_blacklisted(self):
+        """Check if vehicle is blacklisted."""
+        return self.blacklist_status.upper() == "YES"
+
+    def __repr__(self):
+        return f"<Vehicle {self.registration_number}>"
